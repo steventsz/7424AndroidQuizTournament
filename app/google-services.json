@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "242157353545",
+    "project_id": "quiztournament-aa950",
+    "storage_bucket": "quiztournament-aa950.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242157353545:android:bfdd79496248e768a05d98",
+        "android_client_info": {
+          "package_name": "cs.unitec.steve.a7424quiztournament"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyVa_Y96tVC1EmmjP428sDe6r5w_bwM8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
