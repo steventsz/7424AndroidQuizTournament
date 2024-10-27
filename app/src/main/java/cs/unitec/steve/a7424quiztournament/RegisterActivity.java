@@ -5,19 +5,16 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
-    private FirebaseFirestore fireStore;
-
+    private PlayerManage playerManage;
     private LinearProgressIndicator progress;
     private EditText etEmail;
     private EditText etPassword;
@@ -31,7 +28,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         auth = FirebaseAuth.getInstance();
-        fireStore = FirebaseFirestore.getInstance();
+        playerManage = new PlayerManage();
 
         progress = findViewById(R.id.register_progress);
         etEmail = findViewById(R.id.register_email_et);
@@ -46,37 +43,29 @@ public class RegisterActivity extends AppCompatActivity {
             String confirmPassword = etConfirmPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                Toast.makeText(RegisterActivity.this, "Email and Password cannot be empty.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Email and Password cannot be empty.", Toast.LENGTH_LONG).show();
                 return;
             }
 
             if (!password.equals(confirmPassword)) {
-                Toast.makeText(RegisterActivity.this, "Passwords do not match.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Please check password", Toast.LENGTH_LONG).show();
                 return;
             }
 
             progress.setIndeterminate(true);
             auth.createUserWithEmailAndPassword(email, password)
                     .addOnSuccessListener(authResult -> {
-                        FirebaseUser user = authResult.getUser();
-                        if (user != null) {
-                            String uid = user.getUid();
-                            fireStore.collection("players").document(uid).set(new Player(uid))
-                                    .addOnSuccessListener(unused -> {
-                                        progress.setIndeterminate(false);
-                                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        progress.setIndeterminate(false);
-                                        Toast.makeText(RegisterActivity.this, "Failed to register user in Firestore: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                    });
-                        }
+                        String uid = authResult.getUser().getUid();
+                        playerManage.savePlayer(uid, () -> {
+                            progress.setIndeterminate(false);
+                            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        });
                     })
                     .addOnFailureListener(e -> {
                         progress.setIndeterminate(false);
-                        Toast.makeText(RegisterActivity.this, "Registration failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                     });
         });
 
@@ -85,21 +74,5 @@ public class RegisterActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
-    }
-
-    private void enableEdgeToEdge() {
-        // Optional: Customize window behavior for edge-to-edge UI
-    }
-
-    public static class Player {
-        private String player;
-
-        public Player(String player) {
-            this.player = player;
-        }
-
-        public String getPlayer() {
-            return player;
-        }
     }
 }

@@ -20,14 +20,15 @@ import java.util.List;
 import cs.unitec.steve.a7424quiztournament.adapters.TournamentAdapter;
 import cs.unitec.steve.a7424quiztournament.models.Tournament;
 
-public class PlayerHomeActivity extends AppCompatActivity {
+public class ManagerHomeActivity extends AppCompatActivity {
 
-    private final FirebaseAuth auth = FirebaseAuth.getInstance();
-    private final FirebaseFirestore fireStore = FirebaseFirestore.getInstance();
+    private FirebaseAuth auth;
+    private FirebaseFirestore fireStore;
 
     private LinearProgressIndicator indicator;
     private TextView txtUserEmail;
     private Button btnLogout;
+    private Button btnAdd;
 
     private RecyclerView recyclerView;
     private List<Tournament> listData;
@@ -36,35 +37,43 @@ public class PlayerHomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_player_home);
+        setContentView(R.layout.activity_manager_home);
 
-        indicator = findViewById(R.id.player_home_progress);
-        txtUserEmail = findViewById(R.id.player_home_user_email_txt);
-        btnLogout = findViewById(R.id.player_home_logout_btn);
+        auth = FirebaseAuth.getInstance();
+        fireStore = FirebaseFirestore.getInstance();
+
+        indicator = findViewById(R.id.manager_home_progress);
+        txtUserEmail = findViewById(R.id.manager_home_user_email_txt);
+        btnLogout = findViewById(R.id.manager_home_logout_btn);
+        btnAdd = findViewById(R.id.manager_home_add_btn);
 
         if (auth.getCurrentUser() != null) {
             txtUserEmail.setText(auth.getCurrentUser().getEmail());
         }
 
-        btnLogout.setOnClickListener(v -> {
-            auth.signOut();
-            Intent intent = new Intent(PlayerHomeActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        btnLogout.setOnClickListener(v -> logout());
+        btnAdd.setOnClickListener(v -> gotoEditOrAdd());
 
-        recyclerView = findViewById(R.id.player_home_recycler);
-        adapter = new TournamentAdapter(listData, false, new TournamentAdapter.OnAnswerListener() {
+        recyclerView = findViewById(R.id.manager_home_recycler);
+        adapter = new TournamentAdapter(listData, true, null, new TournamentAdapter.OnEditListener() {
             @Override
-            public void onAnswer(String id) {
-                // 玩家回答比赛的逻辑
-                Intent intent = new Intent(PlayerHomeActivity.this, TournamentAnswerActivity.class);
+            public void onEdit(String id) {
+                // 管理者编辑比赛的逻辑
+                Intent intent = new Intent(ManagerHomeActivity.this, TournamentFormActivity.class);
+                intent.putExtra("isEdit", true);
                 intent.putExtra("id", id);
                 startActivity(intent);
             }
-        }, null);
+        });
+
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        refreshTournaments();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         refreshTournaments();
     }
 
@@ -83,6 +92,17 @@ public class PlayerHomeActivity extends AppCompatActivity {
                     indicator.setIndeterminate(false);
                 });
     }
+
+    private void logout() {
+        auth.signOut();
+        Intent intent = new Intent(ManagerHomeActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void gotoEditOrAdd() {
+        Intent intent = new Intent(ManagerHomeActivity.this, TournamentFormActivity.class);
+        intent.putExtra("isEdit", false);
+        startActivity(intent);
+    }
 }
-
-

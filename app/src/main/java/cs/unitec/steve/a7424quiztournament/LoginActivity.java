@@ -6,9 +6,9 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
             String password = etPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Email or Password cannot be empty.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Email or Password cannot be empty.", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -46,17 +46,19 @@ public class LoginActivity extends AppCompatActivity {
             auth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(authResult -> {
                         progress.setIndeterminate(false);
-                        startActivity(new Intent(LoginActivity.this, PlayerHomeActivity.class));
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
                         finish();
                     })
                     .addOnFailureListener(e -> {
                         progress.setIndeterminate(false);
-                        Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
                     });
         });
 
         btnRegister.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
             finish();
         });
     }
